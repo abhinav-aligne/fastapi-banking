@@ -1,5 +1,5 @@
 # Import necessary libraries
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import mysql.connector as SQL
 
@@ -19,42 +19,69 @@ mycursor.execute(sql1)
 app = FastAPI()
 
 # Create models for request and response data
-class Account(BaseModel):
+class BankAccount(BaseModel):
+    name_customer : str
     account_id: int
     balance: float
 
-# Routes for banking system
-@app.post("/create_account/")
-async def create_account(account: Account):
-    query = "INSERT INTO accounts (account_id, balance) VALUES (%s, %s)"
-    values = (account.account_id, account.balance)
-    mycursor.execute(query, values)
-    mydb.commit()
-    return {"message": "Account created successfully"}
+class amt(BaseModel):
+    account_id : int
+    amount : float
+    
 
-@app.put("/deposit/")
-async def deposit(account_id: int, amount: float):
-    query = "UPDATE accounts SET balance = balance + %s WHERE account_id = %s"
-    values = (amount, account_id)
-    mycursor.execute(query, values)
-    mydb.commit()
-    return {"message": "Deposit successful"}
+@app.post("/create_account")
+async def create_account(account: BankAccount):
+    try:
+        query = "INSERT INTO accounts (name_customer, account_id, balance) VALUES (%s, %s, %s)"
+        values = (account.name_customer, account.account_id, account.balance)
+        mycursor.execute(query, values)
+        mydb.commit()
+        return {"Successfully Created"}
+    except SQL.Error as err:
+        raise HTTPException(status_code=500, detail=f"Error: {err}")
+        
+@app.put("/deposit/{id}/{amount}")
+async def deposit(id:int, amount:int):
+    try:
+        query = "UPDATE accounts SET balance = balance + %s WHERE account_id = %s"
+        values = (amount, id)
+        mycursor.execute(query, values)
+        mydb.commit()
+        return {"Successfully deposited"}
+    except SQL.Error as err:
+        raise HTTPException(status_code=500, detail=f"Error: {err}")
 
-@app.put("/withdraw/")
-async def withdraw(account_id: int, amount: float):
-    query = "UPDATE accounts SET balance = balance - %s WHERE account_id = %s"
-    values = (amount, account_id)
-    mycursor.execute(query, values)
-    mydb.commit()
-    return {"message": "Withdrawal successful"}
+@app.put("/withdraw")
+async def withdraw(w: amt):
+    try:
+        if not w.account_id:
+            query = "UPDATE accounts SET balance = balance - %s WHERE account_id = %s"
+            values = (w.amount, w.account_id)
+            mycursor.execute(query, values)
+            mydb.commit()
+            return {"message": "Withdrawal successful"}
+    except SQL.Error as err:
+        raise HTTPException(status_code=500, detail=f"Error: {err}")
 
-@app.get("/get_balance/")
+@app.get("/get_balance")
 async def get_balance(account_id: int):
-    query = "SELECT balance FROM accounts WHERE account_id = %s"
-    values = (account_id,)
-    mycursor.execute(query, values)
-    result = mycursor.fetchone()
-    if result:
-        return {"balance": result[0]}
-    else:
-        return {"message": "Account not found"}
+    try:
+        query = "SELECT balance FROM accounts WHERE account_id = %s"
+        values = (account_id,)
+        mycursor.execute(query, values)
+        result = mycursor.fetchone()
+        if result:
+            return {"balance": result[0]}
+    except SQL.Error as err:
+        raise HTTPException(status_code=500, detail=f"Error: {err}")
+    
+@app.delete("/delete")
+async def delete(account_id:int):
+    try:
+        query = "DELETE FROM accounts WHERE account_id = %s"
+        values = (account_id,)
+        mycursor.execute(query, values)
+        mydb.commit()
+        return {"message": "Delete successful"}
+    except SQL.Error as err:
+        raise HTTPException(status_code= 500, detail = f"Error: {err}")
