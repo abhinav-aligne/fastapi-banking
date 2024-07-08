@@ -98,5 +98,3 @@ async def delete(account_id:int):
         return {"message": "Delete successful"}
     except SQL.Error as err:
         raise HTTPException(status_code= 500, detail = f"Error: {err}")
-=======
->>>>>>> ce421af6a0f57ee99b6dda9dd0b26c338e650398
