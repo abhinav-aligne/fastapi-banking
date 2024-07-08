@@ -28,7 +28,6 @@ class amt(BaseModel):
     account_id : int
     amount : float 
 
-
 @app.post("/create_account")
 async def create_account(account: BankAccount):
     try:
@@ -62,7 +61,10 @@ async def deposit(id:int, amount:int):
 @app.put("/withdraw")
 async def withdraw(w: amt):
     try:
-
+        checking_query = "SELECT * FROM accounts WHERE account_id = %s"
+        value_query = (id,)
+        mycursor.execute(checking_query, value_query)
+        checked_id = mycursor.fetchone()
         if checked_id:
             query = "UPDATE accounts SET balance = balance - %s WHERE account_id = %s"
             values = (w.amount, w.account_id)
@@ -96,3 +98,5 @@ async def delete(account_id:int):
         return {"message": "Delete successful"}
     except SQL.Error as err:
         raise HTTPException(status_code= 500, detail = f"Error: {err}")
+=======
+>>>>>>> ce421af6a0f57ee99b6dda9dd0b26c338e650398
