@@ -1,6 +1,6 @@
 # Import necessary libraries
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 import mysql.connector as SQL
 
 # Connect to MySQL database
