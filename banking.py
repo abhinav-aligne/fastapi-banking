@@ -62,10 +62,7 @@ async def deposit(id:int, amount:int):
 @app.put("/withdraw")
 async def withdraw(w: amt):
     try:
-        checking_query = "SELECT * FROM accounts WHERE account_id = %s"
-        value_query = (w.account_id,)
-        mycursor.execute(checking_query, value_query)
-        checked_id = mycursor.fetchone()
+
         if checked_id:
             query = "UPDATE accounts SET balance = balance - %s WHERE account_id = %s"
             values = (w.amount, w.account_id)
