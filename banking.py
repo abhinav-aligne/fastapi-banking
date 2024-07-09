@@ -3,6 +3,8 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import mysql.connector as SQL
 
+#ROWCOUNT
+
 # Connect to MySQL database
 mydb =  SQL.connect(
         user ='root',
@@ -85,6 +87,8 @@ async def get_balance(account_id: int):
         result = mycursor.fetchone()
         if result:
             return {"balance": result[0]}
+        else:
+            return HTTPException(status_code=404, detail = "ERROR ACCOUNT NOT FOUND")
     except SQL.Error as err:
         raise HTTPException(status_code=500, detail=f"Error: {err}")
     
